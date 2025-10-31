@@ -1,0 +1,11 @@
+# app/requirements.txt
+fastapi
+python-dotenv
+psycopg2-binary
+python-jose
+passlib
+python-multipart
+requests
+groq
+python-dateutil
+pydantic
