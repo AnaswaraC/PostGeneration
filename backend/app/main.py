@@ -28,7 +28,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_routes.router)
-app.include_router(feeds_router)  # Use the imported router
+app.include_router(feeds_router)  
 
 @app.get("/")
 async def root():
