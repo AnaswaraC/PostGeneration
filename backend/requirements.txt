@@ -1,11 +1,22 @@
-# app/requirements.txt
 fastapi
-python-dotenv
-psycopg2-binary
-python-jose
-passlib
+uvicorn
 python-multipart
+psycopg2-binary
+python-jose[cryptography]
+passlib[bcrypt]
+bcrypt
+python-dateutil
+python-dotenv
+pydantic
+pydantic[email]
 requests
 groq
-python-dateutil
-pydantic
+aiohttp
+sqlalchemy
+alembic
+starlette  # Required for CORS middleware
+cryptography  
+async-timeout
+httpx
+feedparser
+beautifulsoup4
