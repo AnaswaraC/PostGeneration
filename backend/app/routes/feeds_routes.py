@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timedelta, timezone
 import asyncio
 
+import warnings
 # Import the enhanced fetcher
 from app.services.content_fetcher import fetch_dotnet_content, EnhancedDotNetFetcher
 from app.services.nlp_processor import AdvancedNLPProcessor
