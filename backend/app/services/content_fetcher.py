@@ -8,8 +8,9 @@ import logging
 from collections import Counter
 import re
 from typing import List, Dict, Any, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import time
+import hashlib
 
 logger = logging.getLogger(__name__)
 
@@ -25,10 +26,12 @@ class EnhancedDotNetFetcher:
         self.session = aiohttp.ClientSession(
             timeout=timeout,
             headers={
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
                 'Accept-Language': 'en-US,en;q=0.5',
                 'Accept-Encoding': 'gzip, deflate, br',
+                'Cache-Control': 'no-cache',
+                'Pragma': 'no-cache',
                 'Connection': 'keep-alive',
             }
         )
@@ -38,60 +41,83 @@ class EnhancedDotNetFetcher:
         if self.session:
             await self.session.close()
 
-    # Microsoft .NET RSS Feeds - No categories or priorities defined
+    # Updated Microsoft .NET RSS Feeds with additional sources
     DOTNET_FEEDS = [
         {
             "name": ".NET Blog",
-            "url": "https://devblogs.microsoft.com/dotnet/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/feed/",
+            "priority": 1
         },
         {
             "name": "Visual Studio Blog", 
-            "url": "https://devblogs.microsoft.com/visualstudio/feed/"
+            "url": "https://devblogs.microsoft.com/visualstudio/feed/",
+            "priority": 1
         },
         {
             "name": "ASP.NET Blog",
-            "url": "https://devblogs.microsoft.com/aspnet/feed/"
+            "url": "https://devblogs.microsoft.com/aspnet/feed/",
+            "priority": 1
         },
         {
             "name": "C# Language",
-            "url": "https://devblogs.microsoft.com/dotnet/category/csharp/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/csharp/feed/",
+            "priority": 2
         },
         {
             "name": ".NET Announcements",
-            "url": "https://devblogs.microsoft.com/dotnet/category/announcements/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/announcements/feed/",
+            "priority": 1
         },
         {
             "name": ".NET Releases",
-            "url": "https://devblogs.microsoft.com/dotnet/category/releases/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/releases/feed/",
+            "priority": 1
         },
         {
             "name": "Azure .NET",
-            "url": "https://devblogs.microsoft.com/dotnet/category/azure/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/azure/feed/",
+            "priority": 2
         },
         {
             "name": ".NET MAUI", 
-            "url": "https://devblogs.microsoft.com/dotnet/category/maui/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/maui/feed/",
+            "priority": 2
         },
         {
             "name": ".NET Performance",
-            "url": "https://devblogs.microsoft.com/dotnet/category/performance/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/performance/feed/",
+            "priority": 2
         },
         {
             "name": "Entity Framework",
-            "url": "https://devblogs.microsoft.com/dotnet/category/entity-framework/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/entity-framework/feed/",
+            "priority": 2
         },
         {
             "name": ".NET Core",
-            "url": "https://devblogs.microsoft.com/dotnet/category/dotnet-core/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/dotnet-core/feed/",
+            "priority": 2
         },
         {
             "name": "Blazor",
-            "url": "https://devblogs.microsoft.com/aspnet/category/blazor/feed/"
+            "url": "https://devblogs.microsoft.com/aspnet/category/blazor/feed/",
+            "priority": 1
         },
         {
             "name": ".NET Community",
-            "url": "https://devblogs.microsoft.com/dotnet/category/community/feed/"
+            "url": "https://devblogs.microsoft.com/dotnet/category/community/feed/",
+            "priority": 3
         },
+        {
+            "name": "C# Corner",
+            "url": "https://www.c-sharpcorner.com/rss/latestcontentall.aspx",
+            "priority": 2
+        },
+        {
+            "name": "NuGet Blog",
+            "url": "https://devblogs.microsoft.com/nuget/feed/",
+            "priority": 2
+        }
     ]
 
     # Category patterns for automatic classification
@@ -118,11 +144,13 @@ class EnhancedDotNetFetcher:
         ],
         "Data & ORM": [
             r'entity framework', r'ef core', r'database', r'sql', r'orm',
-            r'linq', r'data access', r'migration', r'query'
+            r'linq', r'data access', r'migration', r'query', r'transaction',
+            r'saga', r'distributed', r'consistency'
         ],
         "Programming Language": [
             r'c#', r'csharp', r'f#', r'fsharp', r'vb\.net', r'visual basic',
-            r'language', r'syntax', r'compiler', r'roslyn'
+            r'language', r'syntax', r'compiler', r'roslyn', r'pattern',
+            r'example', r'tutorial', r'guide'
         ],
         "Performance & Optimization": [
             r'performance', r'optimization', r'speed', r'memory', r'gc',
@@ -134,7 +162,7 @@ class EnhancedDotNetFetcher:
         ],
         "Core Platform": [
             r'\.net core', r'netcore', r'core', r'platform', r'runtime',
-            r'framework', r'sdk', r'cli'
+            r'framework', r'sdk', r'cli', r'architecture', r'orchestration'
         ],
         "Web UI Framework": [
             r'blazor', r'web assembly', r'wasm', r'component', r'ui',
@@ -157,7 +185,7 @@ class EnhancedDotNetFetcher:
         """
         Fetch all .NET content from Microsoft sources with automatic categorization
         """
-        logger.info("🚀 Starting comprehensive .NET content fetch...")
+        logger.info("🚀 Starting REAL-TIME .NET content fetch...")
         start_time = time.time()
         
         all_articles = []
@@ -179,31 +207,34 @@ class EnhancedDotNetFetcher:
                         "feed_name": feed['name'],
                         "status": "error",
                         "error": str(result),
-                        "articles_fetched": 0
+                        "articles_fetched": 0,
+                        "url": feed['url']
                     })
                 elif isinstance(result, list):
                     all_articles.extend(result)
                     feed_results.append({
                         "feed_name": feed['name'],
                         "status": "success", 
-                        "articles_fetched": len(result)
+                        "articles_fetched": len(result),
+                        "url": feed['url']
                     })
-                    logger.info(f"✅ {feed['name']}: {len(result)} articles")
+                    logger.info(f"✅ {feed['name']}: {len(result)} fresh articles")
             
-            # Remove duplicates and sort
+            # Remove duplicates and sort by date (newest first)
             unique_articles = self._deduplicate_articles(all_articles)
             unique_articles.sort(
-                key=lambda x: x.get('published_timestamp', datetime.min),
+                key=lambda x: x.get('published_timestamp', datetime.min.replace(tzinfo=timezone.utc)),
                 reverse=True
             )
             
             elapsed_time = time.time() - start_time
             
-            # Enhanced response with automatic categorization
+            # Enhanced response with real-time data
             response = {
                 "success": True,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
                 "fetch_duration_seconds": round(elapsed_time, 2),
+                "fetch_type": "REAL_TIME",
                 "summary": {
                     "total_articles": len(unique_articles),
                     "total_feeds_processed": len(self.DOTNET_FEEDS),
@@ -212,17 +243,17 @@ class EnhancedDotNetFetcher:
                     "total_images": sum(len(a.get('images', [])) for a in unique_articles),
                     "articles_with_content": len([a for a in unique_articles if a.get('has_full_content')]),
                     "articles_with_images": len([a for a in unique_articles if a.get('has_images')]),
-                    "average_reading_time_minutes": round(
-                        sum(a.get('reading_time_minutes', 0) for a in unique_articles) / len(unique_articles)
-                        if unique_articles else 0, 1
-                    )
+                    "newest_article": unique_articles[0].get('published') if unique_articles else "None",
+                    "oldest_article": unique_articles[-1].get('published') if unique_articles else "None",
+                    "articles_last_24h": len([a for a in unique_articles if self._is_recent(a, hours=24)]),
+                    "articles_last_7d": len([a for a in unique_articles if self._is_recent(a, days=7)])
                 },
                 "feed_results": feed_results,
                 "content_categories": self._analyze_categories(unique_articles),
                 "articles": unique_articles
             }
             
-            logger.info(f"✅ Fetch complete! {len(unique_articles)} unique articles in {elapsed_time:.2f}s")
+            logger.info(f"✅ REAL-TIME Fetch complete! {len(unique_articles)} fresh articles in {elapsed_time:.2f}s")
             return response
 
     async def _fetch_feed_with_semaphore(self, feed: Dict, max_articles: int) -> List[Dict]:
@@ -230,51 +261,78 @@ class EnhancedDotNetFetcher:
             return await self._fetch_single_feed(feed, max_articles)
 
     async def _fetch_single_feed(self, feed: Dict, max_articles: int) -> List[Dict]:
-        """Fetch and process a single RSS feed"""
+        """Fetch and process a single RSS feed with real-time headers"""
         articles = []
         
         try:
-            logger.info(f"📡 Fetching: {feed['name']} from {feed['url']}")
+            logger.info(f"📡 REAL-TIME Fetching: {feed['name']}")
             
-            async with self.session.get(feed['url']) as response:
+            # Add cache busting for real-time data
+            cache_buster = int(time.time())
+            separator = '?' if '?' not in feed['url'] else '&'
+            feed_url = f"{feed['url']}{separator}_t={cache_buster}"
+            
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }
+            
+            async with self.session.get(feed_url, headers=headers) as response:
                 logger.info(f"📊 {feed['name']} - HTTP Status: {response.status}")
                 
                 if response.status != 200:
-                    logger.warning(f"⚠️ HTTP {response.status} for {feed['name']} - {feed['url']}")
+                    logger.warning(f"⚠️ HTTP {response.status} for {feed['name']}")
                     return articles
                 
                 content = await response.text()
                 parsed_feed = feedparser.parse(content)
                 
+                # Debug feed information
+                logger.info(f"🔍 Feed {feed['name']} has {len(getattr(parsed_feed, 'entries', []))} raw entries")
+                
                 if not hasattr(parsed_feed, 'entries') or not parsed_feed.entries:
-                    logger.warning(f"⚠️ No entries found in {feed['name']} - {feed['url']}")
+                    logger.warning(f"⚠️ No entries found in {feed['name']}")
                     if hasattr(parsed_feed, 'bozo') and parsed_feed.bozo:
                         logger.warning(f"⚠️ Feed parsing error: {parsed_feed.bozo_exception}")
                     return articles
                 
-                logger.info(f"📊 {feed['name']}: Processing {len(parsed_feed.entries[:max_articles])} entries")
+                # Focus on recent articles (last 90 days)
+                recent_articles = []
+                cutoff_date = datetime.now(timezone.utc) - timedelta(days=90)
+                
+                for entry in parsed_feed.entries[:max_articles]:
+                    entry_date = self._parse_date(entry)
+                    if entry_date >= cutoff_date:
+                        recent_articles.append(entry)
+                
+                logger.info(f"📊 {feed['name']}: Processing {len(recent_articles)} recent entries")
                 
                 successful_articles = 0
-                for entry in parsed_feed.entries[:max_articles]:
+                for entry in recent_articles:
                     try:
                         article = await self._process_entry(entry, feed)
                         if article:
                             articles.append(article)
                             successful_articles += 1
-                        await asyncio.sleep(0.2)
+                        # Small delay to be respectful to servers
+                        await asyncio.sleep(0.1)
                     except Exception as e:
                         logger.error(f"❌ Error processing entry in {feed['name']}: {str(e)}")
                         continue
                 
-                logger.info(f"✅ {feed['name']}: Successfully processed {successful_articles}/{len(parsed_feed.entries[:max_articles])} articles")
+                logger.info(f"✅ {feed['name']}: Successfully processed {successful_articles}/{len(recent_articles)} recent articles")
         
+        except asyncio.TimeoutError:
+            logger.error(f"⏰ Timeout fetching feed {feed['name']}")
         except Exception as e:
-            logger.error(f"❌ Error fetching feed {feed['name']} from {feed['url']}: {str(e)}")
+            logger.error(f"❌ Error fetching feed {feed['name']}: {str(e)}")
         
         return articles
 
     async def _process_entry(self, entry, feed: Dict) -> Optional[Dict[str, Any]]:
-        """Process a single RSS entry with automatic categorization"""
+        """Process a single RSS entry with enhanced real-time data"""
         try:
             url = entry.get('link', '').strip()
             title = entry.get('title', '').strip()
@@ -283,21 +341,38 @@ class EnhancedDotNetFetcher:
             if not url or not title or url == 'javascript:void(0)' or url.startswith('#'):
                 return None
             
+            # Parse publication date
+            published_timestamp = self._parse_date(entry)
+            
+            # Skip very old articles (older than 90 days)
+            cutoff_date = datetime.now(timezone.utc) - timedelta(days=90)
+            if published_timestamp < cutoff_date:
+                return None
+            
             # Basic article structure
             article = {
                 'title': title,
                 'url': url,
                 'author': self._clean_author(entry.get('author', 'Microsoft .NET Team')),
                 'published': entry.get('published', ''),
-                'published_timestamp': self._parse_date(entry),
+                'published_timestamp': published_timestamp,
                 'feed_source': feed['name'],
                 'summary': self._clean_html(entry.get('summary', ''))[:500],
                 'tags': self._extract_tags(entry),
+                'is_recent': self._is_recent({'published_timestamp': published_timestamp}, hours=24),
+                'is_very_recent': self._is_recent({'published_timestamp': published_timestamp}, hours=6)
             }
             
-            # Fetch enhanced full content
-            content_data = await self._fetch_enhanced_article_content(url)
-            article.update(content_data)
+            # Fetch enhanced full content (with timeout to ensure real-time performance)
+            try:
+                content_data = await asyncio.wait_for(
+                    self._fetch_enhanced_article_content(url), 
+                    timeout=15.0
+                )
+                article.update(content_data)
+            except asyncio.TimeoutError:
+                logger.warning(f"⏰ Timeout fetching content for: {title}")
+                article.update(self._empty_content_response())
             
             # Combine all text for analysis
             full_text = article.get('full_content', '') + ' ' + article.get('summary', '') + ' ' + title
@@ -313,50 +388,62 @@ class EnhancedDotNetFetcher:
             logger.error(f"❌ Error processing entry: {str(e)}")
             return None
 
+    def _is_recent(self, article: Dict, days: int = 0, hours: int = 0) -> bool:
+        """Check if article is recent based on days/hours"""
+        pub_date = article.get('published_timestamp')
+        if not pub_date:
+            return False
+        
+        cutoff_date = datetime.now(timezone.utc) - timedelta(days=days, hours=hours)
+        return pub_date >= cutoff_date
+
     def _auto_categorize(self, content: str, url: str, title: str) -> str:
         """Automatically categorize content based on patterns"""
-        # Combine all text for analysis
         analysis_text = (content + ' ' + title + ' ' + url).lower()
         
         category_scores = {}
         
-        # Score each category based on pattern matches
         for category, patterns in self.CATEGORY_PATTERNS.items():
             score = 0
             for pattern in patterns:
                 matches = re.findall(pattern, analysis_text, re.IGNORECASE)
-                score += len(matches) * 2  # Weight matches
+                score += len(matches) * 2
             
-            # Additional scoring based on URL patterns
             if category.lower() in url.lower():
                 score += 3
             
             if score > 0:
                 category_scores[category] = score
         
-        # Return the highest scoring category, or "General" if none found
         if category_scores:
             best_category = max(category_scores.items(), key=lambda x: x[1])[0]
-            logger.debug(f"📊 Categorized as '{best_category}' with score {category_scores[best_category]}")
             return best_category
         else:
             return "General"
 
     async def _fetch_enhanced_article_content(self, url: str) -> Dict[str, Any]:
-        """Fetch enhanced article content with better parsing"""
+        """Fetch enhanced article content with real-time headers"""
         try:
-            async with self.session.get(url, timeout=20) as response:
+            # Add cache busting for article content
+            cache_buster = int(time.time())
+            separator = '?' if '?' not in url else '&'
+            article_url = f"{url}{separator}_t={cache_buster}"
+            
+            async with self.session.get(article_url, timeout=15, headers={
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache'
+            }) as response:
                 if response.status != 200:
                     return self._empty_content_response()
                 
                 html_content = await response.text()
                 soup = BeautifulSoup(html_content, 'html.parser')
                 
-                # Remove unwanted elements but keep structure
+                # Remove unwanted elements
                 for element in soup.find_all(['script', 'style', 'nav', 'footer', 'header', 'aside', 'form']):
                     element.decompose()
                 
-                # Find main content area with multiple strategies
+                # Find main content area
                 main_content = self._find_main_content(soup)
                 
                 if not main_content:
@@ -406,7 +493,6 @@ class EnhancedDotNetFetcher:
 
     def _extract_structured_content(self, content, base_url: str) -> Dict[str, Any]:
         """Extract structured content with paragraphs and images"""
-        # Extract text content
         paragraphs = []
         for p in content.find_all(['p', 'h1', 'h2', 'h3', 'h4']):
             text = p.get_text(strip=True)
@@ -442,7 +528,6 @@ class EnhancedDotNetFetcher:
         seen_urls = set()
         
         for img in content.find_all('img'):
-            # Try multiple src attributes
             src = (img.get('src') or 
                   img.get('data-src') or 
                   img.get('data-lazy-src') or
@@ -451,10 +536,8 @@ class EnhancedDotNetFetcher:
             if not src or src.startswith('data:') or 'pixel' in src.lower():
                 continue
             
-            # Make absolute URL
             full_url = urljoin(base_url, src)
             
-            # Skip duplicates and tracking pixels
             if (full_url in seen_urls or 
                 self._is_tracking_pixel(full_url, img) or
                 'avatar' in full_url.lower()):
@@ -462,7 +545,6 @@ class EnhancedDotNetFetcher:
             
             seen_urls.add(full_url)
             
-            # Enhanced image metadata
             image_data = {
                 'url': full_url,
                 'alt': img.get('alt', '')[:300],
@@ -479,14 +561,12 @@ class EnhancedDotNetFetcher:
 
     def _extract_image_caption(self, img_tag) -> str:
         """Extract image caption from surrounding elements"""
-        # Check for figcaption
         parent = img_tag.parent
         if parent and parent.name == 'figure':
             caption = parent.find('figcaption')
             if caption:
                 return caption.get_text(strip=True)[:500]
         
-        # Check next sibling paragraph
         next_elem = img_tag.find_next_sibling()
         if (next_elem and next_elem.name == 'p' and 
             len(next_elem.get_text(strip=True)) < 200):
@@ -499,7 +579,6 @@ class EnhancedDotNetFetcher:
         if not author:
             return "Microsoft .NET Team"
         
-        # Remove email addresses and extra whitespace
         author = re.sub(r'<[^>]+>', '', author)
         author = re.sub(r'\s+', ' ', author).strip()
         
@@ -519,7 +598,8 @@ class EnhancedDotNetFetcher:
             'update', 'release', 'announcement', 'tutorial', 'guide', 'code',
             'development', 'programming', 'windows', 'linux', 'macos',
             'github', 'copilot', 'ai', 'machine', 'learning', 'docker',
-            'kubernetes', 'microservices', 'asp.net', '.net'
+            'kubernetes', 'microservices', 'asp.net', '.net', 'saga',
+            'pattern', 'transaction', 'orchestration', 'reliable'
         }
         
         common_stop_words = {
@@ -533,7 +613,6 @@ class EnhancedDotNetFetcher:
         
         return [word for word, _ in common]
 
-    # Utility methods
     def _categorize_image(self, img_tag, url: str) -> str:
         alt = (img_tag.get('alt', '') or '').lower()
         title = (img_tag.get('title', '') or '').lower()
@@ -579,6 +658,22 @@ class EnhancedDotNetFetcher:
                     return datetime(*time_tuple[:6], tzinfo=timezone.utc)
                 except:
                     pass
+        
+        # Fallback: try to parse from string date
+        date_strings = ['published', 'updated', 'created']
+        for field in date_strings:
+            if hasattr(entry, field) and getattr(entry, field):
+                try:
+                    date_str = getattr(entry, field)
+                    # Try common date formats
+                    for fmt in ['%a, %d %b %Y %H:%M:%S %z', '%a, %d %b %Y %H:%M:%S %Z', '%Y-%m-%dT%H:%M:%S%z']:
+                        try:
+                            return datetime.strptime(date_str, fmt).replace(tzinfo=timezone.utc)
+                        except:
+                            continue
+                except:
+                    pass
+        
         return datetime.now(timezone.utc)
 
     def _clean_html(self, text: str) -> str:
@@ -627,7 +722,7 @@ class EnhancedDotNetFetcher:
 # FastAPI integration function
 async def fetch_dotnet_content(max_articles_per_feed: int = 20) -> Dict[str, Any]:
     """
-    Fetch all Microsoft .NET content with automatic categorization
+    Fetch all Microsoft .NET content in REAL-TIME
     """
-    fetcher = EnhancedDotNetFetcher()
-    return await fetcher.fetch_all_content(max_articles_per_feed)
+    async with EnhancedDotNetFetcher() as fetcher:
+        return await fetcher.fetch_all_content(max_articles_per_feed)
