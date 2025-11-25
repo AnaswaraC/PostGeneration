@@ -523,41 +523,70 @@ class EnhancedDotNetFetcher:
         }
 
     def _extract_enhanced_images(self, content, base_url: str) -> List[Dict[str, Any]]:
-        """Extract images with enhanced metadata"""
+        """Extract images with better detection"""
         images = []
         seen_urls = set()
         
         for img in content.find_all('img'):
+            # Try multiple src attributes
             src = (img.get('src') or 
                   img.get('data-src') or 
                   img.get('data-lazy-src') or
-                  img.get('data-original'))
+                  img.get('data-original') or
+                  img.get('srcset', '').split(',')[0].split(' ')[0] if 'srcset' in img.attrs else None)
             
-            if not src or src.startswith('data:') or 'pixel' in src.lower():
+            if not src or src.startswith('data:'):
                 continue
             
-            full_url = urljoin(base_url, src)
+            # Better URL cleaning and validation
+            full_url = urljoin(base_url, src.split('?')[0])  # Remove query params
+            full_url = full_url.split('#')[0]  # Remove fragments
             
+            # Less restrictive filtering
             if (full_url in seen_urls or 
-                self._is_tracking_pixel(full_url, img) or
-                'avatar' in full_url.lower()):
+                self._is_tracking_pixel(full_url, img)):
                 continue
             
             seen_urls.add(full_url)
+            
+            # Extract dimensions more reliably
+            width = img.get('width')
+            height = img.get('height')
+            
+            # Try to parse from style attribute
+            if not width or not height:
+                style = img.get('style', '')
+                size_match = re.search(r'width:\s*(\d+)px', style)
+                if size_match:
+                    width = size_match.group(1)
             
             image_data = {
                 'url': full_url,
                 'alt': img.get('alt', '')[:300],
                 'title': img.get('title', '')[:300],
-                'width': img.get('width'),
-                'height': img.get('height'),
+                'width': width,
+                'height': height,
                 'type': self._categorize_image(img, full_url),
                 'caption': self._extract_image_caption(img),
+                'file_size_estimate': self._estimate_file_size(width, height)
             }
             
             images.append(image_data)
         
-        return images[:25]
+        return images[:15]
+
+    def _estimate_file_size(self, width, height) -> str:
+        """Estimate image file size"""
+        try:
+            if width and height:
+                pixels = int(width) * int(height)
+                if pixels > 1000000:  # 1MP
+                    return "large"
+                elif pixels > 100000:  # 100KP
+                    return "medium"
+            return "small"
+        except:
+            return "unknown"
 
     def _extract_image_caption(self, img_tag) -> str:
         """Extract image caption from surrounding elements"""
@@ -632,14 +661,18 @@ class EnhancedDotNetFetcher:
             return 'content_image'
 
     def _is_tracking_pixel(self, url: str, img_tag) -> bool:
+        """Less restrictive tracking pixel detection"""
         width = img_tag.get('width', '')
         height = img_tag.get('height', '')
         
-        if width == '1' or height == '1':
+        # Only filter obvious 1x1 pixels
+        if (str(width) == '1' and str(height) == '1'):
             return True
         
-        tracking_patterns = ['track', 'pixel', 'analytics', 'beacon', 'spacer']
-        return any(pattern in url.lower() for pattern in tracking_patterns)
+        tracking_patterns = ['pixel', 'analytics', 'beacon', 'spacer.gif']
+        url_lower = url.lower()
+        
+        return any(pattern in url_lower for pattern in tracking_patterns)
 
     def _extract_tags(self, entry) -> List[str]:
         tags = []

@@ -6,6 +6,8 @@ import logging
 # Import routers correctly
 from app.routes import auth_routes
 from app.routes.feeds_routes import router as feeds_router
+from app.routes.poster_routes import router as poster_router
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -28,7 +30,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_routes.router)
-app.include_router(feeds_router)  
+app.include_router(feeds_router) 
+app.include_router(poster_router) 
 
 @app.get("/")
 async def root():

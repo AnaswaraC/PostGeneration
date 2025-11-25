@@ -1,3 +1,5 @@
+# app/services/nlp_processor.py
+
 import logging
 import re
 import spacy
@@ -5,8 +7,9 @@ import torch
 from transformers import pipeline
 from typing import Dict, Any, List, Optional
 from collections import Counter
+from sklearn.feature_extraction.text import TfidfVectorizer
 import numpy as np
-
+ 
 logger = logging.getLogger(__name__)
  
 class AdvancedNLPProcessor:
@@ -14,55 +17,49 @@ class AdvancedNLPProcessor:
     Advanced NLP processor for analyzing, summarizing, and classifying technical content.
     Uses spaCy for structure, transformers for summarization & sentiment.
     """
- 
+
     def __init__(self):
         logger.info("🔍 Initializing Advanced NLP Processor...")
         
         self.nlp = None
         self.summarizer = None
         self.sentiment_analyzer = None
-        
-        # Suppress specific warnings
-        import warnings
-        warnings.filterwarnings("ignore", message=".*torch_dtype.*")
-        warnings.filterwarnings("ignore", message=".*device.*")
+        self._initialized = False
         
         try:
             # Initialize spaCy with better error handling
             try:
-                self.nlp = spacy.load("en_core_web_sm")  # Start with small model for reliability
+                self.nlp = spacy.load("en_core_web_sm")  # Small model for reliability
+                logger.info("✅ spaCy model loaded successfully")
             except OSError:
-                logger.warning("⚠️ spaCy model not found. Using fallback mode.")
+                logger.warning("⚠️ spaCy model not found. Using fallback processing...")
                 self.nlp = None
                 
         except Exception as e:
             logger.error(f"❌ Failed to load spaCy: {e}")
             self.nlp = None
 
-        # Initialize transformers with better error handling and updated parameters
+        # Initialize transformers with better error handling
         try:
-            device = -1  # Use CPU for stability and to avoid warnings
-            logger.info("🔄 Initializing transformers on CPU...")
-            
+            device = -1  # Use CPU for stability
+            logger.info("🔄 Loading summarization model...")
             self.summarizer = pipeline(
                 "summarization", 
-                model="facebook/bart-large-cnn", 
-                device=device,
-                dtype=torch.float32  # Use dtype instead of torch_dtype
-            )
-            self.sentiment_analyzer = pipeline(
-                "sentiment-analysis", 
-                model="distilbert-base-uncased-finetuned-sst-2-english",
+                model="sshleifer/distilbart-cnn-12-6",  # Lighter model
                 device=device
             )
-            logger.info("✅ Transformers initialized successfully")
+            logger.info("✅ Summarization model loaded")
+            
+            logger.info("🔄 Loading sentiment analysis model...")
+            self.sentiment_analyzer = pipeline("sentiment-analysis")
+            logger.info("✅ Sentiment analysis model loaded")
             
         except Exception as e:
             logger.warning(f"⚠️ Transformers initialization failed: {e}")
             logger.info("🔄 Using lightweight fallback methods")
             self.summarizer = None
             self.sentiment_analyzer = None
- 
+
         # Enhanced technical keyword patterns for .NET
         self.tech_terms = {
             "dotnet", ".net", "asp.net", "blazor", "csharp", "c#", "visual studio", "maui",
@@ -80,21 +77,10 @@ class AdvancedNLPProcessor:
             "performance": ["performance", "benchmark", "speed", "fast", "optimize", "memory", "gc"],
             "migration": ["migrate", "upgrade", "port", "compatibility", "breaking change"]
         }
-
-        # Enhanced positive/negative word lists for better sentiment analysis
-        self.positive_words = {
-            "great", "excellent", "amazing", "improved", "better", "fast", "easy", "new",
-            "enhanced", "powerful", "exciting", "innovative", "efficient", "reliable",
-            "robust", "scalable", "productive", "intuitive", "seamless", "optimized",
-            "performance", "success", "achievement", "breakthrough", "milestone"
-        }
         
-        self.negative_words = {
-            "issue", "problem", "bug", "slow", "difficult", "broken", "deprecated",
-            "warning", "error", "failed", "crash", "vulnerability", "security",
-            "limitation", "incompatible", "outdated", "legacy", "complex", "challenging"
-        }
- 
+        self._initialized = True
+        logger.info("✅ Advanced NLP Processor initialized successfully")
+
     def process_article(self, article: Dict[str, Any]) -> Dict[str, Any]:
         """Perform full NLP analysis and return enriched metadata"""
         
@@ -104,38 +90,35 @@ class AdvancedNLPProcessor:
         if not text or not text.strip():
             logger.warning("⚠️ No text content for NLP processing")
             return self._get_fallback_analysis(article)
- 
-        logger.info(f"🧠 Processing NLP for: {article.get('title', 'Unknown')[:50]}...")
- 
+
+        logger.debug(f"🧠 Processing NLP for: {article.get('title', 'Unknown')[:50]}...")
+
         try:
             # 1️⃣ Summarization
             summary = self._summarize_text(text)
- 
+
             # 2️⃣ Sentiment & tone
             sentiment_data = self._analyze_sentiment(text)
             tone = self._map_tone(sentiment_data)
- 
+
             # 3️⃣ Entity extraction
             entities = self._extract_entities(text)
- 
+
             # 4️⃣ Keyword extraction
             keywords = self._extract_keywords(text)
- 
+
             # 5️⃣ Technical focus scoring
             tech_score = self._compute_tech_relevance(text)
- 
+
             # 6️⃣ Intent classification
             intent = self._detect_intent(text)
- 
-            # 7️⃣ Topic modeling
+
+            # 7️⃣ Topic modeling - FIXED
             topic = self._infer_topic(text)
 
-            # 8️⃣ Enhanced analysis for .NET content
-            enhanced_sentiment = self._enhance_sentiment_for_dotnet(text, sentiment_data)
- 
             return {
                 "summary_generated": summary,
-                "sentiment": enhanced_sentiment,
+                "sentiment": sentiment_data,
                 "tone": tone,
                 "entities": entities[:10],  # Limit to top 10
                 "keywords_nlp": keywords,
@@ -148,7 +131,7 @@ class AdvancedNLPProcessor:
         except Exception as e:
             logger.error(f"❌ NLP processing failed: {e}")
             return self._get_fallback_analysis(article)
- 
+
     def _get_fallback_analysis(self, article: Dict[str, Any]) -> Dict[str, Any]:
         """Provide basic analysis when full processing fails"""
         title = article.get("title", "")
@@ -160,14 +143,14 @@ class AdvancedNLPProcessor:
             "keywords_nlp": self._extract_fallback_keywords(article),
             "intent": "general information",
             "tech_focus_score": 0.5,
-            "topic": "General",
+            "topic": "General .NET",
             "processing_success": False
         }
- 
+
     # --------------------------------------------------------------------
     # SUMMARIZATION
     # --------------------------------------------------------------------
- 
+
     def _summarize_text(self, text: str) -> str:
         """Smart summarization with fallbacks"""
         
@@ -193,7 +176,7 @@ class AdvancedNLPProcessor:
         except Exception as e:
             logger.warning(f"⚠️ Transformer summarization failed, using extractive: {e}")
             return self._extractive_summarize(text)
- 
+
     def _extractive_summarize(self, text: str, num_sentences: int = 3) -> str:
         """Fallback extractive summarization"""
         try:
@@ -205,11 +188,10 @@ class AdvancedNLPProcessor:
             else:
                 # Basic sentence splitting
                 sentences = re.split(r'[.!?]+', text)
-                clean_sentences = [s.strip() for s in sentences if len(s.strip()) > 10]
-                return " ".join(clean_sentences[:num_sentences])
+                return " ".join(sentences[:num_sentences])
         except:
             return text[:400]
- 
+
     def _clean_text_for_summarization(self, text: str) -> str:
         """Clean text for better summarization"""
         # Remove code blocks, URLs, etc.
@@ -217,13 +199,13 @@ class AdvancedNLPProcessor:
         text = re.sub(r'http\S+', '', text)
         text = re.sub(r'\s+', ' ', text)
         return text.strip()
- 
+
     # --------------------------------------------------------------------
-    # SENTIMENT - ENHANCED VERSION
+    # SENTIMENT
     # --------------------------------------------------------------------
- 
+
     def _analyze_sentiment(self, text: str) -> Dict[str, Any]:
-        """Enhanced sentiment analysis with fallback"""
+        """Sentiment analysis with fallback"""
         if not self.sentiment_analyzer:
             return self._fallback_sentiment(text)
             
@@ -240,46 +222,23 @@ class AdvancedNLPProcessor:
         except Exception as e:
             logger.warning(f"⚠️ Sentiment analysis failed: {e}")
             return self._fallback_sentiment(text)
- 
-    def _fallback_sentiment(self, text: str) -> Dict[str, Any]:
-        """Enhanced rule-based sentiment as fallback"""
-        text_lower = text.lower()
-        pos_count = sum(1 for word in self.positive_words if word in text_lower)
-        neg_count = sum(1 for word in self.negative_words if word in text_lower)
-        
-        # Bias towards positive for technical announcements
-        tech_bias = 1 if any(term in text_lower for term in ["release", "announce", "update", "new"]) else 0
-        
-        total_words = len(text_lower.split())
-        if total_words > 0:
-            pos_ratio = pos_count / total_words
-            neg_ratio = neg_count / total_words
-            
-            if pos_ratio > neg_ratio + 0.02 or (pos_count > neg_count and tech_bias):
-                confidence = min(0.95, 0.7 + (pos_ratio * 0.3))
-                return {"label": "positive", "confidence": confidence, "polarity": 1}
-            elif neg_ratio > pos_ratio + 0.02:
-                confidence = min(0.95, 0.7 + (neg_ratio * 0.3))
-                return {"label": "negative", "confidence": confidence, "polarity": -1}
-        
-        return {"label": "neutral", "confidence": 0.5, "polarity": 0}
 
-    def _enhance_sentiment_for_dotnet(self, text: str, sentiment: Dict[str, Any]) -> Dict[str, Any]:
-        """Enhance sentiment analysis specifically for .NET technical content"""
+    def _fallback_sentiment(self, text: str) -> Dict[str, Any]:
+        """Rule-based sentiment as fallback"""
+        positive_words = {"great", "excellent", "amazing", "improved", "better", "fast", "easy", "exciting"}
+        negative_words = {"issue", "problem", "bug", "slow", "difficult", "broken", "deprecated"}
+        
         text_lower = text.lower()
+        pos_count = sum(1 for word in positive_words if word in text_lower)
+        neg_count = sum(1 for word in negative_words if word in text_lower)
         
-        # Technical announcements are usually positive
-        announcement_terms = ["release", "announce", "launch", "introduce", "available", "general availability"]
-        if any(term in text_lower for term in announcement_terms):
-            if sentiment["polarity"] < 0:
-                # Override negative sentiment for announcements
-                return {"label": "positive", "confidence": 0.8, "polarity": 1}
-            elif sentiment["polarity"] == 0:
-                # Boost neutral sentiment for announcements
-                return {"label": "positive", "confidence": 0.75, "polarity": 1}
-        
-        return sentiment
- 
+        if pos_count > neg_count:
+            return {"label": "positive", "confidence": 0.7, "polarity": 1}
+        elif neg_count > pos_count:
+            return {"label": "negative", "confidence": 0.7, "polarity": -1}
+        else:
+            return {"label": "neutral", "confidence": 0.5, "polarity": 0}
+
     def _map_tone(self, sentiment: Dict[str, Any]) -> str:
         """Map sentiment to appropriate tone for social media"""
         label = sentiment.get("label", "neutral")
@@ -291,11 +250,11 @@ class AdvancedNLPProcessor:
             return "analytical / informative"
         else:
             return "professional / neutral"
- 
+
     # --------------------------------------------------------------------
     # ENTITIES
     # --------------------------------------------------------------------
- 
+
     def _extract_entities(self, text: str) -> List[Dict[str, str]]:
         """Extract entities with fallback"""
         if not self.nlp:
@@ -307,7 +266,7 @@ class AdvancedNLPProcessor:
             
             for ent in doc.ents:
                 # Filter relevant entity types
-                if ent.label_ in {"ORG", "PRODUCT", "PERSON", "GPE", "TECH"}:
+                if ent.label_ in {"ORG", "PRODUCT", "PERSON", "GPE"}:
                     entities.append({
                         "text": ent.text,
                         "label": ent.label_,
@@ -329,7 +288,7 @@ class AdvancedNLPProcessor:
         except Exception as e:
             logger.warning(f"⚠️ Entity extraction failed: {e}")
             return []
- 
+
     def _entity_relevance(self, entity_text: str) -> float:
         """Score entity relevance for .NET content"""
         entity_lower = entity_text.lower()
@@ -342,11 +301,11 @@ class AdvancedNLPProcessor:
             return 0.7
         else:
             return 0.3
- 
+
     # --------------------------------------------------------------------
     # KEYWORDS
     # --------------------------------------------------------------------
- 
+
     def _extract_keywords(self, text: str, top_n: int = 12) -> List[str]:
         """Extract keywords with multiple strategies"""
         
@@ -376,7 +335,7 @@ class AdvancedNLPProcessor:
         # Combine and deduplicate
         all_keywords = list(set(tech_keywords + freq_keywords))
         return all_keywords[:top_n]
- 
+
     def _extract_fallback_keywords(self, article: Dict[str, Any]) -> List[str]:
         """Extract keywords without NLP dependencies"""
         text = f"{article.get('title', '')} {article.get('summary', '')}".lower()
@@ -387,11 +346,11 @@ class AdvancedNLPProcessor:
                 keywords.append(term)
                 
         return keywords[:8]
- 
+
     # --------------------------------------------------------------------
     # TECH FOCUS
     # --------------------------------------------------------------------
- 
+
     def _compute_tech_relevance(self, text: str) -> float:
         """Compute technical relevance with normalization"""
         text_lower = text.lower()
@@ -404,11 +363,11 @@ class AdvancedNLPProcessor:
             
         density = matches / max(10, word_count / 100)  # Normalize per 100 words
         return min(1.0, round(density, 2))
- 
+
     # --------------------------------------------------------------------
     # INTENT
     # --------------------------------------------------------------------
- 
+
     def _detect_intent(self, text: str) -> str:
         """Enhanced intent detection"""
         text_lower = text.lower()
@@ -426,21 +385,24 @@ class AdvancedNLPProcessor:
             return best_intent[0]
         else:
             return "general information"
- 
+
     # --------------------------------------------------------------------
-    # TOPIC MODELING
+    # TOPIC MODELING - FIXED VERSION
     # --------------------------------------------------------------------
- 
+
     def _infer_topic(self, text: str) -> str:
-        """Enhanced topic inference"""
+        """Fixed topic inference with proper .NET categories"""
         themes = {
-            "Web Development": ["asp.net", "blazor", "mvc", "razor", "signalr", "web api"],
-            "Mobile Development": ["maui", "xamarin", "android", "ios", "mobile"],
-            "Cloud & Azure": ["azure", "cloud", "container", "kubernetes", "docker", "serverless"],
-            "Data & ORM": ["entity framework", "ef core", "database", "sql", "linq", "data"],
-            "Performance": ["performance", "optimize", "benchmark", "speed", "memory", "gc"],
-            "Security": ["authentication", "authorization", "encryption", "identity", "jwt", "oauth"],
-            "Tools & IDE": ["visual studio", "vs code", "debug", "intellisense", "tooling"]
+            "Web Development": ["asp.net", "blazor", "mvc", "razor", "signalr", "web api", "web development"],
+            "Mobile Development": ["maui", "xamarin", "android", "ios", "mobile", "cross-platform"],
+            "Cloud & Azure": ["azure", "cloud", "container", "kubernetes", "docker", "serverless", "microservices"],
+            "Data & ORM": ["entity framework", "ef core", "database", "sql", "linq", "data", "orm"],
+            "Performance": ["performance", "optimize", "benchmark", "speed", "memory", "gc", "garbage collection"],
+            "Security": ["authentication", "authorization", "encryption", "identity", "jwt", "oauth", "security"],
+            "Tools & IDE": ["visual studio", "vs code", "debug", "intellisense", "tooling", "ide"],
+            "Programming Language": ["c#", "csharp", "f#", "fsharp", "vb.net", "syntax", "compiler", "roslyn"],
+            "Core Platform": [".net core", "netcore", "core", "platform", "runtime", "framework", "sdk"],
+            "General .NET": [".net", "dotnet", "microsoft", "development", "programming"]  # Added this category
         }
         
         text_lower = text.lower()
@@ -450,9 +412,62 @@ class AdvancedNLPProcessor:
             score = sum(1 for keyword in keywords if keyword in text_lower)
             scores[topic] = score
         
+        # Find the best matching topic
         best_topic = max(scores.items(), key=lambda x: x[1])
         
         if best_topic[1] > 0:
             return best_topic[0]
         else:
-            return "General .NET"
+            return "General .NET"  # Now this is a valid category
+
+    # --------------------------------------------------------------------
+    # HEALTH CHECK
+    # --------------------------------------------------------------------
+
+    def health_check(self) -> Dict[str, Any]:
+        """Check the health status of the NLP processor"""
+        return {
+            "initialized": self._initialized,
+            "spacy_loaded": self.nlp is not None,
+            "summarizer_loaded": self.summarizer is not None,
+            "sentiment_analyzer_loaded": self.sentiment_analyzer is not None,
+            "models": {
+                "spacy": "en_core_web_sm" if self.nlp else "none",
+                "summarizer": "distilbart-cnn-12-6" if self.summarizer else "none",
+                "sentiment": "distilbert-base" if self.sentiment_analyzer else "none"
+            }
+        }
+
+
+# Simple test function
+def test_nlp_processor():
+    """Test the NLP processor with sample content"""
+    processor = AdvancedNLPProcessor()
+    
+    test_articles = [
+        {
+            "title": "ASP.NET Core Performance Improvements",
+            "content": "Microsoft has released new performance optimizations for ASP.NET Core that improve response times by up to 40%. These updates include better memory management and enhanced JIT compilation."
+        },
+        {
+            "title": "Getting Started with Blazor",
+            "content": "This tutorial shows you how to build your first Blazor application with C# and .NET. Learn about components, data binding, and deployment options."
+        },
+        {
+            "title": "Azure Functions with .NET",
+            "content": "Build serverless applications using Azure Functions and .NET. This guide covers triggers, bindings, and best practices for cloud development."
+        }
+    ]
+    
+    for i, article in enumerate(test_articles):
+        print(f"\n--- Testing Article {i+1} ---")
+        result = processor.process_article(article)
+        print(f"Title: {article['title']}")
+        print(f"Topic: {result['topic']}")
+        print(f"Intent: {result['intent']}")
+        print(f"Tech Score: {result['tech_focus_score']}")
+        print(f"Summary: {result['summary_generated']}")
+        print(f"Keywords: {result['keywords_nlp']}")
+
+if __name__ == "__main__":
+    test_nlp_processor()
