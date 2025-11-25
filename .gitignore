@@ -1,2 +1,11 @@
 .env
+<<<<<<< HEAD
 backend/.env
+=======
+app/config.py
+.env
+.env
+__pycache__/
+*.pyc
+*.pyo
+>>>>>>> dev

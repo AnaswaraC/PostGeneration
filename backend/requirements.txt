@@ -14,9 +14,17 @@ groq
 aiohttp
 sqlalchemy
 alembic
-starlette  # Required for CORS middleware
+starlette  
 cryptography  
 async-timeout
 httpx
 feedparser
 beautifulsoup4
+spacy
+torch
+transformers
+scikit-learn
+aiofiles
+aiohttp
+stability-sdk
+
