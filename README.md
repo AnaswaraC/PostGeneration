@@ -1,28 +1,51 @@
+---
 
-```markdown
-# 🌌 Pollyn Frontend — Angular Dashboard
+# 🌿 **Pollyn — AI-Powered Social Discovery Platform**
 
-This is the **frontend dashboard** for **Pollyn**, an interactive Angular web application featuring a glassmorphic interface, smooth scrolling navigation, 3D visual effects, and modal-based authentication.
+Pollyn is an interactive, AI-enhanced social platform that helps users create, explore, and share content in a beautifully designed, glassmorphic Angular interface.
+This repository contains the **Pollyn frontend** built with **Angular 15**, featuring smooth scrolling navigation, 3D UI elements, and modal-based authentication.
+
+> If your project contains a backend, include it here. Otherwise, this README focuses on the **frontend**.
 
 ---
 
-## 🚀 Features
+# ✨ **Features**
 
-- ⚡ **Angular 15** SPA (Single Page Application)
-- 🧊 **Glassmorphic UI** with floating navigation
-- 🔄 **Smooth scroll navigation** between page sections
-- 🧭 **Dynamic nav indicator** tracking active sections
-- 👤 **Login / Signup / Profile modals** with scroll lock
-- 🌀 **3D rotating card history** and scrollable discovery feed
-- 🌗 **Responsive layout** optimized for desktop & tablet
-- 🛠️ Built with **PrimeIcons**, **SCSS**, and Angular animations
+### 🎨 **Cutting-Edge UI**
+
+* Glassmorphic, responsive dashboard
+* Floating navigation bar with active section indicators
+* Smooth scrolling with intelligent section tracking
+* Modern layout optimized for desktop + tablets
+
+### 👤 **User System**
+
+* Modal-based Login, Signup, and Profile
+* Body scroll-locking during authentication
+* Animated open/close transitions
+
+### ⚙️ **Interactive Components**
+
+* AI-powered **Create Post** module
+* 3D rotating **History** carousel
+* Scrollable **Discover** feed
+* Modular and extensible component architecture
+
+### 🧰 **Tech Stack**
+
+| Technology     | Purpose                                  |
+| -------------- | ---------------------------------------- |
+| **Angular 15** | SPA Frontend Framework                   |
+| **SCSS**       | Glassmorphism, layout, responsive styles |
+| **PrimeIcons** | Iconography                              |
+| **TypeScript** | Strong logic typing & DOM structure      |
+| **Renderer2**  | Dynamic style + nav animations           |
 
 ---
 
-## 🧱 Project Structure
+# 📁 **Project Structure**
 
 ```
-
 src/
 ├── app/
 │    ├── dashboard/
@@ -44,63 +67,52 @@ src/
 │
 ├── styles.scss
 └── index.html
-
-````
-
----
-
-## 🧩 Key Components
-
-| Component | Description |
-|------------|--------------|
-| **Dashboard** | Main layout with navbar and scroll-tracking sections |
-| **Create Post** | AI-assisted post generator |
-| **History** | 3D spinning card carousel showing generated posts |
-| **Discover** | Scrollable vertical feed of community content |
-| **Footer** | Dynamic footer section with glassmorphic styling |
-| **Auth Modals** | Login, Signup, and Profile pop-ups with scroll lock |
+```
 
 ---
 
-## 🖥️ Development Setup
+# 🚀 **Getting Started (Frontend)**
 
-### 1️⃣ Clone the repository
+## 1️⃣ Clone the repository
+
 ```bash
 git clone https://github.com/your-username/pollyn-frontend.git
 cd pollyn-frontend
-````
 
-### 2️⃣ Install dependencies
+```
+
+## 2️⃣ Install dependencies
 
 ```bash
 npm install
 ```
 
-### 3️⃣ Run the development server
+## 3️⃣ Run the development server
 
 ```bash
 ng serve
 ```
 
-Open your browser and navigate to **[http://localhost:4200/](http://localhost:4200/)**.
-
-Angular will automatically reload whenever you modify a source file.
+Navigate to **[http://localhost:4200/](http://localhost:4200/)**.
+Angular automatically reloads on file changes.
 
 ---
 
-## 🏗️ Build
-
-To build the production-ready app:
+# 🧱 **Build for Production**
 
 ```bash
 ng build
 ```
 
-The optimized output will be stored in the `dist/` folder.
+The optimized build outputs to:
+
+```
+dist/
+```
 
 ---
 
-## 🧪 Testing
+# 🧪 **Testing**
 
 ### Unit Tests
 
@@ -108,40 +120,15 @@ The optimized output will be stored in the `dist/` folder.
 ng test
 ```
 
-### End-to-End Tests
+### End-to-End Tests (requires Cypress/Protractor)
 
 ```bash
 ng e2e
 ```
 
-> Note: You must install a compatible E2E framework such as Cypress or Protractor before running E2E tests.
+# 🌐 **Deployment**
 
----
-
-## 🧠 Development Notes
-
-* Navigation uses **smooth scroll with section offset tracking**.
-* The app **locks scrolling until login/signup** to protect content.
-* The **indicator automatically updates** when scrolling through sections.
-* Built with a **modular architecture**, so you can easily extend sections or add more routes.
-
----
-
-## 🧾 Tech Stack
-
-| Technology     | Purpose                                  |
-| -------------- | ---------------------------------------- |
-| **Angular 15** | Frontend framework                       |
-| **SCSS**       | Styling and glassmorphism effects        |
-| **PrimeIcons** | Icons used in navbar and UI elements     |
-| **TypeScript** | Strongly-typed logic & DOM interaction   |
-| **Renderer2**  | Dynamic style updates for nav animations |
-
----
-
-## 🌐 Deployment
-
-You can deploy the built `dist/` folder on any static host:
+You can deploy the built `dist/` folder to any static web host:
 
 * GitHub Pages
 * Netlify
@@ -149,7 +136,7 @@ You can deploy the built `dist/` folder on any static host:
 * Firebase Hosting
 * AWS Amplify
 
-Example (GitHub Pages):
+### Example — GitHub Pages:
 
 ```bash
 ng build --output-path docs --base-href /pollyn-frontend/
