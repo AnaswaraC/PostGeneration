@@ -1,0 +1,48 @@
+<section class="history-container">
+  <h3>History</h3>
+
+  <!-- Search -->
+  <div class="search-container" *ngIf="history.length > 0">
+    <input
+      type="text"
+      [(ngModel)]="searchQuery"
+      (input)="applyFilter()"
+      placeholder="Search posts by title, description, or tag..."
+    />
+  </div>
+
+  <div *ngIf="filteredHistory.length === 0" class="empty-history">
+    No posts found.
+  </div>
+
+  <div class="history-grid" *ngIf="filteredHistory.length > 0">
+    <div
+      class="history-card"
+      *ngFor="let post of filteredHistory; let i = index"
+      [style.--index]="i"
+    >
+      <div class="parallax-glow"></div>
+
+      <div class="history-header">
+        <h4>{{ post.title }}</h4>
+        <span class="post-date">{{ post.date | date: 'short' }}</span>
+      </div>
+
+      <p class="description">{{ post.description }}</p>
+      <p class="caption" *ngIf="post.caption">💬 {{ post.caption }}</p>
+
+      <div class="history-tags" *ngIf="post.tags?.length">
+        <span class="tag" *ngFor="let tag of post.tags">{{ tag }}</span>
+      </div>
+
+      <div class="history-actions">
+        <button (click)="viewPost(i)" title="View Post">
+          <i class="pi pi-eye"></i> View
+        </button>
+        <button (click)="deletePost(i)" title="Delete Post">
+          <i class="pi pi-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

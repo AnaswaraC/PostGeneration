@@ -1,0 +1,57 @@
+<div class="signup-overlay" (click)="closeSignup()">
+  <div class="signup-card" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeSignup($event)">
+      <i class="pi pi-times"></i>
+    </button>
+
+    <div class="signup-header">
+      <img src="../../../assets/natural.svg" alt="Pollyn Logo" />
+      <h2>Create Account</h2>
+      <p>Join Pollyn and start creating your own posts!</p>
+    </div>
+
+    <form (ngSubmit)="onSignup()" class="signup-form">
+      <div class="form-group">
+        <i class="pi pi-user"></i>
+        <input
+          type="text"
+          [(ngModel)]="name"
+          name="name"
+          placeholder="Full Name"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <i class="pi pi-envelope"></i>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Email Address"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <i class="pi pi-lock"></i>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="signup-btn">Sign Up</button>
+
+      <div class="extras">
+        <p>
+          Already have an account?
+          <a href="#" class="login-link" (click)="closeSignup($event)">Login</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

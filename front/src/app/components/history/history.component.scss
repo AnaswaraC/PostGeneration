@@ -1,0 +1,219 @@
+/* ============================================
+   True Masonry Grid — Glassmorphic Style
+============================================ */
+.history-container {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 0 2rem;
+
+  h3 {
+    font-size: 1.6rem;
+    color: #cfe4ff;
+    margin-bottom: 1.5rem;
+    letter-spacing: 1px;
+  }
+
+  .empty-history {
+    color: #8896b3;
+    font-style: italic;
+    margin-top: 2rem;
+  }
+
+  .search-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+
+    input {
+      width: 60%;
+      max-width: 400px;
+      padding: 0.6rem 1rem;
+      border-radius: 12px;
+      border: 1px solid rgba(160, 200, 255, 0.2);
+      background: rgba(25, 27, 45, 0.6);
+      color: #e9f2ff;
+      font-size: 0.95rem;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s ease;
+
+      &:focus {
+        outline: none;
+        border-color: rgba(180, 220, 255, 0.4);
+        background: rgba(25, 27, 45, 0.8);
+      }
+
+      &::placeholder {
+        color: #9cb5d8;
+      }
+    }
+  }
+}
+
+/* Masonry Grid Layout (CSS Columns) */
+.history-grid {
+  column-count: 4;
+  column-gap: 1.5rem;
+  perspective: 1000px;
+  padding-bottom: 3rem;
+  transition: all 0.4s ease;
+
+  @media (max-width: 1400px) {
+    column-count: 3;
+  }
+  @media (max-width: 900px) {
+    column-count: 2;
+  }
+  @media (max-width: 600px) {
+    column-count: 1;
+  }
+}
+
+/* sGlass Cards — Masonry Items */
+.history-card {
+  display: inline-block;
+  width: 100%;
+  margin-bottom: 1.5rem;
+  background: rgba(49, 50, 58, 0.9);
+  border: 1px solid rgba(180, 200, 255, 0.15);
+  backdrop-filter: blur(12px) saturate(150%);
+  border-radius: 20px;
+  box-shadow:
+    0 8px 20px rgba(0, 0, 0, 0.35),
+    inset 0 0 8px rgba(255, 255, 255, 0.05);
+  color: #e9f2ff;
+  padding: 1.2rem;
+  text-align: left;
+  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
+  transform: translateZ(0);
+  break-inside: avoid;
+  cursor: pointer;
+
+  /* Add natural variation in height/shape */
+  &:nth-child(3n) {
+    transform: translateY(10px);
+  }
+  &:nth-child(4n) {
+    transform: translateY(-8px);
+  }
+  &:nth-child(5n) {
+    padding-bottom: 2rem;
+  }
+
+  /* Hover Interaction */
+  &:hover {
+    transform: translateZ(40px) rotateY(2deg) scale(1.03);
+    border-color: rgba(180, 220, 255, 0.4);
+    box-shadow:
+      0 12px 28px rgba(80, 140, 255, 0.25),
+      inset 0 0 12px rgba(255, 255, 255, 0.08);
+    z-index: 2;
+  }
+
+  .history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h4 {
+      font-size: 1rem;
+      color: #a3c8ff;
+      margin: 0;
+    }
+
+    .post-date {
+      font-size: 0.8rem;
+      color: #7e93b8;
+    }
+  }
+
+  .description {
+    font-size: 0.9rem;
+    color: #cfdaf5;
+    margin: 0.5rem 0;
+  }
+
+  .caption {
+    font-size: 0.8rem;
+    color: #a0b8f5;
+    margin-bottom: 0.5rem;
+  }
+
+  .history-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+
+    .tag {
+      background: rgba(160, 200, 255, 0.08);
+      border: 1px solid rgba(160, 200, 255, 0.15);
+      border-radius: 10px;
+      color: #b5d1ff;
+      padding: 0.2rem 0.6rem;
+      font-size: 0.7rem;
+    }
+  }
+
+  .history-actions {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.8rem;
+
+    button {
+      background: rgba(2, 65, 255, 0.25);
+      border: 1px solid rgba(160, 200, 255, 0.25);
+      color: #cfe4ff;
+      padding: 0.3rem 0.7rem;
+      border-radius: 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+
+      &:hover {
+        background: rgba(120, 160, 255, 0.25);
+        border-color: rgba(180, 220, 255, 0.5);
+        transform: translateY(-2px);
+      }
+    }
+  }
+
+  /* Parallax Glow Layer */
+  .parallax-glow {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(100, 180, 255, 0.15),
+      transparent 70%
+    );
+    filter: blur(30px);
+    z-index: -1;
+    transition: all 0.3s ease;
+  }
+
+  &:hover .parallax-glow {
+    background: radial-gradient(
+      circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+      rgba(140, 200, 255, 0.25),
+      transparent 70%
+    );
+  }
+}
+
+/* Responsive Tweaks */
+@media (max-width: 768px) {
+  .history-container {
+    padding: 0 1rem;
+  }
+  .history-grid {
+    column-gap: 1rem;
+  }
+  .history-card {
+    padding: 1rem;
+  }
+}

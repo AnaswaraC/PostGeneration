@@ -1,0 +1,329 @@
+.orb-dashboard {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+/* Orb Container with Magnetic Drag */
+.orb-container {
+  position: relative;
+  width: clamp(300px, 40vw, 480px);
+  height: clamp(300px, 40vw, 480px);
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  filter: 
+    drop-shadow(0 8px 32px rgba(31, 107, 255, 0.15))
+    drop-shadow(0 2px 8px rgba(31, 107, 255, 0.1));
+  cursor: pointer;
+  transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+  
+  &:hover {
+    transition-duration: 0.3s;
+  }
+}
+
+/* Professional Glassmorphic Orb - Firefox Compatible */
+.glass-orb {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+
+  /* Advanced glass morphism  */
+  background: 
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(255, 255, 255, 0.25) 0%,
+      rgba(255, 255, 255, 0.1) 30%,
+      rgba(255, 255, 255, 0.05) 60%,
+      transparent 100%
+    ),
+    radial-gradient(
+      circle at 70% 70%,
+      rgba(180, 220, 255, 0.15) 0%,
+      rgba(162, 212, 255, 0.08) 30%,
+      transparent 70%
+    );
+
+  /* Glass border effect */
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  
+  /* Use filter instead of backdrop-filter for Firefox compatibility */
+  filter: blur(8px) brightness(1.1);
+  
+  /* Sophisticated shadow system */
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.1),
+    inset 2px 0 8px rgba(255, 255, 255, 0.05),
+    inset -2px 0 8px rgba(255, 255, 255, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.03),
+    0 4px 32px rgba(31, 107, 255, 0.12),
+    0 16px 64px rgba(31, 107, 255, 0.08);
+
+  animation: orbFloat 8s ease-in-out infinite;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Inner glow for depth */
+.orb-inner-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: 
+    radial-gradient(
+      circle at 30% 30%,
+      rgba(100, 180, 255, 0.3) 0%,
+      transparent 50%
+    );
+  mix-blend-mode: overlay;
+  opacity: 0.6;
+  animation: innerGlowPulse 6s ease-in-out infinite;
+  z-index: 1;
+}
+
+/* Dynamic blob background */
+.glass-orb::before {
+  content: '';
+  position: absolute;
+  top: -10%;
+  left: -10%;
+  right: -10%;
+  bottom: -10%;
+  
+  /* Professional color palette */
+  background: 
+    radial-gradient(circle at 30% 30%, rgba(100, 150, 255, 0.4), transparent 40%),
+    radial-gradient(circle at 70% 20%, rgba(255, 100, 150, 0.3), transparent 40%),
+    radial-gradient(circle at 50% 70%, rgba(120, 220, 200, 0.3), transparent 40%),
+    conic-gradient(
+      from 0deg at 50% 50%,
+      rgba(85, 138, 252, 0.6),
+      rgba(127, 72, 248, 0.5),
+      rgba(255, 71, 191, 0.4),
+      rgba(64, 210, 255, 0.5),
+      rgba(55, 118, 255, 0.6)
+    );
+  
+  border-radius: 45% 55% 60% 40% / 50% 45% 55% 60%;
+  mix-blend-mode: soft-light;
+  opacity: 0.7;
+  filter: blur(40px) brightness(1.2);
+  animation: 
+    blobMorph 18s ease-in-out infinite,
+    hueRotate 20s linear infinite;
+  z-index: 0;
+  transition: all 0.5s ease;
+}
+
+/* Surface highlights and reflections */
+.glass-orb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  
+  background: 
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(255, 255, 255, 0.4) 0%,
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at 80% 80%,
+      rgba(200, 220, 255, 0.3) 0%,
+      transparent 30%
+    ),
+    linear-gradient(
+      135deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.1) 50%,
+      transparent 100%
+    );
+  
+  mix-blend-mode: overlay;
+  opacity: 0.4;
+  animation: highlightShift 10s ease-in-out infinite;
+  z-index: 2;
+}
+
+/* Floating elements inside orb */
+.orb-float-elements {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  z-index: 3;
+}
+
+.float-element {
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  animation: floatElement 12s ease-in-out infinite;
+  
+  &.element-1 {
+    width: 20%;
+    height: 20%;
+    top: 20%;
+    left: 20%;
+    animation-delay: 0s;
+  }
+  
+  &.element-2 {
+    width: 15%;
+    height: 15%;
+    top: 60%;
+    left: 70%;
+    animation-delay: -4s;
+  }
+  
+  &.element-3 {
+    width: 12%;
+    height: 12%;
+    top: 70%;
+    left: 30%;
+    animation-delay: -8s;
+  }
+}
+
+/* Magnetic Interaction States */
+.glass-orb:hover {
+  filter: blur(6px) brightness(1.2);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.05),
+    0 8px 48px rgba(31, 107, 255, 0.2),
+    0 24px 80px rgba(31, 107, 255, 0.15);
+  
+  &::before {
+    opacity: 0.9;
+    filter: blur(35px) brightness(1.3);
+  }
+  
+  &::after {
+    opacity: 0.6;
+  }
+  
+  .orb-inner-glow {
+    opacity: 0.8;
+  }
+}
+
+.glass-orb:active {
+  filter: blur(10px) brightness(0.95);
+  animation-duration: 0.5s;
+  
+  &::before {
+    opacity: 1;
+    filter: blur(45px) brightness(1.5);
+  }
+}
+
+/* Professional Animations */
+@keyframes orbFloat {
+  0%, 100% { 
+    transform: 
+      translateY(0px) 
+      rotate(0deg)
+      scale(1);
+  }
+  33% { 
+    transform: 
+      translateY(-12px) 
+      rotate(1deg)
+      scale(1.005);
+  }
+  66% { 
+    transform: 
+      translateY(8px) 
+      rotate(-0.5deg)
+      scale(0.998);
+  }
+}
+
+@keyframes blobMorph {
+  0%, 100% { 
+    border-radius: 45% 55% 60% 40% / 50% 45% 55% 60%;
+    transform: scale(1) rotate(0deg);
+  }
+  25% { 
+    border-radius: 55% 45% 40% 60% / 45% 50% 50% 55%;
+    transform: scale(1.05) rotate(90deg);
+  }
+  50% { 
+    border-radius: 40% 60% 55% 45% / 60% 45% 55% 40%;
+    transform: scale(1.03) rotate(180deg);
+  }
+  75% { 
+    border-radius: 60% 40% 45% 55% / 40% 60% 40% 60%;
+    transform: scale(1.07) rotate(270deg);
+  }
+}
+
+@keyframes hueRotate {
+  0% { filter: hue-rotate(0deg) blur(40px) brightness(1.2); }
+  100% { filter: hue-rotate(360deg) blur(40px) brightness(1.2); }
+}
+
+@keyframes innerGlowPulse {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+@keyframes highlightShift {
+  0%, 100% { 
+    opacity: 0.3;
+  }
+  50% { 
+    opacity: 0.6;
+  }
+}
+
+@keyframes floatElement {
+  0%, 100% { 
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% { 
+    transform: translate(10px, -15px) scale(1.1);
+    opacity: 0.8;
+  }
+  50% { 
+    transform: translate(-5px, 10px) scale(0.9);
+    opacity: 0.4;
+  }
+  75% { 
+    transform: translate(15px, 5px) scale(1.05);
+    opacity: 0.7;
+  }
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  .orb-container {
+    width: clamp(250px, 70vw, 320px);
+    height: clamp(250px, 70vw, 320px);
+  }
+  
+  .glass-orb::before {
+    filter: blur(30px) brightness(1.1);
+  }
+}
+
+@media (hover: none) {
+  .orb-container:hover {
+    transform: none;
+  }
+  
+  .glass-orb:active {
+    transform: scale(0.95);
+  }
+}

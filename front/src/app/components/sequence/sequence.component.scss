@@ -1,0 +1,307 @@
+/* ============================================================
+   FONT + RESET
+   ============================================================ */
+@import url('https://api.fontshare.com/v2/css?f[]=satoshi@500,700&display=swap');
+
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow-x: hidden;
+  background: #000;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 500;
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+   CONTAINER
+   ============================================================ */
+.intro-sequence {
+  position: relative;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+  color: #fff;
+  background: radial-gradient(circle at center, #060b14, #0b1423 70%);
+}
+
+/* ============================================================
+   AURORA BACKGROUND
+   ============================================================ */
+.horizontal-track {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+  width: 100%;
+  will-change: transform;
+  background: linear-gradient(
+    90deg,
+    #081021 0%, #0c1524 8%, #142c45 20%, #1a3a60 35%, #234677 50%,
+    #2e5192 65%, #3f58b8 80%, #5850e0 90%, #7a6eff 100%,
+    rgba(150, 120, 255, 0.8) 115%, rgba(220, 200, 255, 0.4) 130%
+  );
+  background-size: 600% 200%;
+  background-blend-mode: screen;
+  animation: globalAurora 120s ease-in-out infinite;
+}
+
+/* ============================================================
+   SLIDES
+   ============================================================ */
+.slide {
+  flex: 0 0 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(12px);
+  mix-blend-mode: lighten;
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.slide::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 25% 30%, rgba(61, 220, 151, 0.08), transparent 70%),
+    radial-gradient(circle at 80% 70%, rgba(64, 156, 255, 0.1), transparent 70%);
+  background-size: 200% 200%;
+  animation: auroraShift 30s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ============================================================
+   CONTENT
+   ============================================================ */
+.content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  max-width: 50vw;
+  padding: 0 2rem;
+  margin: 0 auto;
+}
+
+.content h1 {
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 700;
+  margin: 0;
+  background: linear-gradient(90deg, #d0d0ff, #ffffff 40%, #b5c9ff 80%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 10s ease-in-out infinite;
+}
+
+.content p {
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  max-width: 40ch;
+  margin: 1rem;
+}
+
+/* ============================================================
+   INTRO SLIDE SPECIAL
+   ============================================================ */
+.slide-intro {
+  justify-content: flex-start;
+  padding-left: 8vw;
+  background: radial-gradient(circle at center, #081021, #030712);
+}
+
+.slide-intro .content {
+  text-align: left;
+  max-width: 48vw;
+}
+
+.slide-intro h1 {
+  font-size: clamp(4rem, 10vw, 8rem);
+  background: linear-gradient(120deg, #3ddc97, #1abc9c, #409cff, #3ddc97);
+  background-size: 300%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s ease-in-out infinite;
+}
+
+.slide-intro p {
+  opacity: 0;
+  transform: translateY(12px);
+  animation: fadeUp 1.4s ease forwards 1s;
+}
+
+/* ============================================================
+   BUTTONS — BASE
+   ============================================================ */
+.skip-btn,
+.end-btn {
+  position: fixed;
+  border: none;
+  border-radius: 50px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  color: #fff;
+  transition: all 0.4s ease;
+  z-index: 50;
+  overflow: hidden;
+  letter-spacing: 0.3px;
+}
+
+/* ------------------------------------------------------------
+   SKIP BUTTON — Glass Frosted Look
+------------------------------------------------------------ */
+.skip-btn {
+  top: 2rem;
+  right: 2rem;
+  padding: 0.6rem 1.4rem;
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px) saturate(160%);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.25),
+    inset 0 1px 2px rgba(255, 255, 255, 0.1);
+}
+
+.skip-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.25);
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.35),
+    inset 0 1px 2px rgba(255, 255, 255, 0.2);
+}
+
+/* ------------------------------------------------------------
+   END BUTTON — LIQUID METAL CHROME 2.0
+------------------------------------------------------------ */
+.end-btn {
+  bottom: 3rem;
+  left: 50%;
+  transform: translate(-50%, 60px);
+  padding: 0.8rem 2.6rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+  color: #10151f;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: 50px;
+
+  /* Chrome gradient core */
+  background: linear-gradient(
+    135deg,
+    #e6ebf5 0%,
+    #c0c5d0 15%,
+    #d5d9e2 35%,
+    #7f8c99 50%,
+    #b0b6c2 65%,
+    #f5f6f7 85%,
+    #ffffff 100%
+  );
+  background-size: 300% 300%;
+  animation: chromeShift 9s ease-in-out infinite;
+
+  /* Depth + reflections */
+  box-shadow:
+    inset 1px 1px 4px rgba(255, 255, 255, 0.8),
+    inset -3px -3px 8px rgba(0, 0, 0, 0.45),
+    0 8px 20px rgba(0, 0, 0, 0.45),
+    0 0 60px rgba(170, 200, 255, 0.25);
+  perspective: 800px;
+  transform-style: preserve-3d;
+  transition: all 0.6s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+/* Gloss reflection */
+.end-btn::before {
+  content: '';
+  position: absolute;
+  top: -120%;
+  left: -50%;
+  width: 200%;
+  height: 340%;
+  background: radial-gradient(
+    ellipse at 50% 50%,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.1) 40%,
+    transparent 80%
+  );
+  transform: rotate(25deg);
+  mix-blend-mode: screen;
+  animation: glossSweep 5.5s ease-in-out infinite;
+}
+
+/* Subtle metal flicker */
+.end-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    rgba(180, 200, 255, 0.25) 40%,
+    rgba(255, 255, 255, 0.08) 80%
+  );
+  opacity: 0.4;
+  filter: blur(3px);
+  mix-blend-mode: soft-light;
+  animation: metalPulse 7s ease-in-out infinite;
+  border-radius: 50px;
+}
+
+/* Hover state — deeper chrome + light bloom */
+.end-btn:hover {
+  transform: translate(-50%, 0) scale(1.08) rotateX(6deg);
+  background-position: 100% 0;
+  box-shadow:
+    inset 3px 3px 8px rgba(255, 255, 255, 0.9),
+    inset -4px -4px 10px rgba(0, 0, 0, 0.55),
+    0 12px 30px rgba(0, 0, 0, 0.6),
+    0 0 90px rgba(180, 200, 255, 0.7);
+}
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes globalAurora {
+  0%, 100% { background-position: 0% 45%; filter: brightness(0.95) saturate(1.05); }
+  50% { background-position: 160% 55%; filter: brightness(1.15) saturate(1.25); }
+}
+
+@keyframes auroraShift {
+  0%, 100% { background-position: 0% 50%; opacity: 0.9; }
+  50% { background-position: 160% 52%; opacity: 1; }
+}
+
+@keyframes shimmer {
+  0%, 100% { background-position: 0% 50%; filter: brightness(0.9); }
+  50% { background-position: 100% 50%; filter: brightness(1.3); }
+}
+
+@keyframes fadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes chromeShift {
+  0% { background-position: 0% 50%; filter: brightness(1) contrast(1.05); }
+  50% { background-position: 100% 50%; filter: brightness(1.2) contrast(1.15); }
+  100% { background-position: 0% 50%; filter: brightness(1) contrast(1.05); }
+}
+
+@keyframes glossSweep {
+  0% { transform: rotate(25deg) translateY(0); opacity: 0.5; }
+  50% { transform: rotate(25deg) translateY(10%); opacity: 0.7; }
+  100% { transform: rotate(25deg) translateY(0); opacity: 0.5; }
+}
+
+@keyframes metalPulse {
+  0%, 100% { opacity: 0.4; filter: blur(2px); }
+  50% { opacity: 0.7; filter: blur(4px); }
+}

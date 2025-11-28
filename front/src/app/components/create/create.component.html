@@ -1,0 +1,97 @@
+<div class="create-post-layout">
+  <div class="navbar-space"></div>
+
+  <div class="create-post-container">
+    <!-- Pre-settings Section -->
+    <section class="pre-settings">
+      <h3>Post Generator Settings</h3>
+
+      <!-- Category Tabs -->
+      <div class="category-tabs">
+        <button
+          *ngFor="let cat of templateCategories"
+          class="tab"
+          [class.active]="selectedCategory === cat"
+          (click)="selectedCategory = cat"
+        >
+          {{ cat }}
+        </button>
+      </div>
+
+      <!-- Template Cards -->
+      <div class="template-grid">
+        <div
+          class="template-card"
+          *ngFor="let template of templates[selectedCategory]"
+          [class.selected]="selectedTemplate === template.name"
+          (click)="selectedTemplate = template.name"
+        >
+          <h4>{{ template.name }}</h4>
+          <p>{{ template.size }}</p>
+        </div>
+      </div>
+
+      <!-- Input Fields -->
+      <div class="prompt-box">
+        <input type="text" placeholder="Write your topic here..." />
+        <textarea rows="2" placeholder="Describe tone, context, and details (optional)"></textarea>
+      </div>
+
+      <!-- Post Count + Buttons -->
+      <div class="post-count-container">
+        <div class="post-count">
+          <label for="postCount">Number of posts:</label>
+          <select id="postCount" [(ngModel)]="selectedPostCount">
+            <option *ngFor="let n of [].constructor(20); let i = index" [value]="i + 1">
+              {{ i + 1 }}
+            </option>
+          </select>
+        </div>
+
+        <div class="editor-actions">
+          <button class="btn-generate">⚡ Generate</button>
+          <button class="btn-clear">✕ Clear</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Preview Carousel -->
+    <section class="preview">
+      <button class="nav-btn prev-btn" (click)="prevCard()">
+        <i class="pi pi-arrow-left"></i>
+      </button>
+
+      <div class="preview-carousel">
+        <div
+          class="slide-card"
+          *ngFor="let card of previewCards; let i = index"
+          [class.active]="i === currentCardIndex"
+          [ngStyle]="getCardStyle(i)"
+        >
+          <div class="preview-card">
+            <h4>{{ card.title }}</h4>
+            <p>{{ card.description }}</p>
+
+            <div class="preview-actions">
+              <button class="btn-approve"><i class="pi pi-check"></i></button>
+              <button class="btn-discard"><i class="pi pi-times"></i></button>
+            </div>
+          </div>
+
+          <div class="caption-card">
+            <p>{{ card.caption }}</p>
+
+            <div class="caption-actions">
+              <button class="btn-approve"><i class="pi pi-check"></i></button>
+              <button class="btn-discard"><i class="pi pi-times"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button class="nav-btn next-btn" (click)="nextCard()">
+        <i class="pi pi-arrow-right"></i>
+      </button>
+    </section>
+  </div>
+</div>
