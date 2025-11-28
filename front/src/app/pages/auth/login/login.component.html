@@ -1,0 +1,47 @@
+<div class="login-overlay" (click)="closeLogin($event)">
+  <div class="login-card" (click)="$event.stopPropagation()">
+    <button class="close-btn" (click)="closeLogin($event)">
+      <i class="pi pi-times"></i>
+    </button>
+
+    <div class="login-header">
+      <img src="../../../assets/natural.svg" alt="Pollyn Logo" />
+      <h2>Welcome Back</h2>
+      <p>Sign in to continue exploring Pollyn.</p>
+    </div>
+
+    <form (ngSubmit)="onLogin()" class="login-form">
+      <div class="form-group">
+        <i class="pi pi-envelope"></i>
+        <input
+          type="email"
+          [(ngModel)]="email"
+          name="email"
+          placeholder="Email Address"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <i class="pi pi-lock"></i>
+        <input
+          type="password"
+          [(ngModel)]="password"
+          name="password"
+          placeholder="Password"
+          required
+        />
+      </div>
+
+      <button type="submit" class="login-btn">Login</button>
+
+      <div class="extras">
+        <a href="#" class="forgot">Forgot Password?</a>
+        <p>
+          Don't have an account?
+          <a href="#" class="signup">Sign Up</a>
+        </p>
+      </div>
+    </form>
+  </div>
+</div>

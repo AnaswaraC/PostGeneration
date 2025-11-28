@@ -1,0 +1,89 @@
+<div class="main-page">
+  <!-- ORB DASHBOARD HERO -->
+  <section class="orb-dashboard" id="hero">
+    <!-- Glassmorphic Navbar -->
+    <nav class="glass-navbar">
+      <div class="nav-container">
+        <div class="nav-logo">
+          <img src="../../../assets/natural.svg" alt="Pollyn logo" />
+        </div>
+
+        <div class="nav-items">
+          <div class="nav-indicator"></div>
+
+          <!-- Navigation Links -->
+          <a
+            *ngFor="
+              let item of navItems;
+              let i = index
+            "
+            class="nav-item"
+            title="{{ item.name }}"
+            (mouseleave)="onLeave($event)"
+            (click)="navigateToSection(item.target, i)"
+            [class.active]="isActive(i)"
+          >
+            <i class="pi" [ngClass]="item.icon"></i>
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Auth Buttons (only show when not logged in) -->
+    <div class="auth-buttons" *ngIf="!isLoggedIn">
+      <button class="login-btn" (click)="toggleLogin()">Login</button>
+      <button class="signup-btn" (click)="toggleSignup()">Sign Up</button>
+    </div>
+
+    <!-- Blob Layer -->
+    <div class="blob-container">
+      <app-glass-blob></app-glass-blob>
+    </div>
+
+    <!-- Overlay Content -->
+    <div class="overlay">
+      <h1 class="logo">[What's Buzzing?]</h1>
+    </div>
+  </section>
+
+  <!-- CREATE POST SECTION -->
+  <section class="create-post-section" id="create" *ngIf="isLoggedIn">
+    <app-create></app-create>
+  </section>
+
+  <!-- HISTORY SECTION -->
+  <section class="history-section" id="history" *ngIf="isLoggedIn">
+    <app-history></app-history>
+  </section>
+
+  <!-- DISCOVER SECTION -->
+  <section class="discover-section" id="discover" *ngIf="isLoggedIn">
+    <app-discover></app-discover>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer-section" id="contact" *ngIf="isLoggedIn">
+    <app-footer></app-footer>
+  </footer>
+</div>
+
+<!-- PROFILE MODAL -->
+<div class="profile-overlay" *ngIf="showProfile" (click)="closeProfile()">
+  <div class="profile-modal" (click)="$event.stopPropagation()">
+    <app-profile (close)="closeProfile()" (logout)="handleLogout()"></app-profile>
+  </div>
+</div>
+
+<!-- LOGIN MODAL -->
+<div class="login-overlay" *ngIf="showLogin" (click)="closeLogin()">
+  <div class="login-card" (click)="$event.stopPropagation()">
+    <app-login (close)="closeLogin()"></app-login>
+  </div>
+</div>
+
+<!-- SIGNUP MODAL -->
+<div class="signup-overlay" *ngIf="showSignup" (click)="closeSignup()">
+  <div class="signup-card" (click)="$event.stopPropagation()">
+    <app-signup (close)="closeSignup()"></app-signup>
+  </div>
+</div>

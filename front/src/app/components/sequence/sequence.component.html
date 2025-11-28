@@ -1,0 +1,48 @@
+<section class="intro-sequence" #container>
+  <button class="skip-btn" (click)="skipIntro()">Skip</button>
+
+  <div class="horizontal-track" #track>
+
+    <!-- INTRO -->
+    <div class="slide slide-intro" #slide>
+      <div class="content center">
+        <h1>POLLYN</h1>
+        <p>Your daily dose of what’s buzzing.</p>
+      </div>
+    </div>
+
+    <!-- CONNECT -->
+    <div class="slide slide-connect" #slide>
+      <div class="content left">
+        <h1>Connect</h1>
+        <p>Pollyn listens to the internet’s heartbeat — detecting trends as they emerge.</p>
+      </div>
+    </div>
+
+    <!-- CREATE -->
+    <div class="slide slide-create" #slide>
+      <div class="content right">
+        <h1>Create</h1>
+        <p>Turn real-time insights into stunning AI-generated posters in seconds.</p>
+      </div>
+    </div>
+
+    <!-- APPROVE -->
+    <div class="slide slide-collaborate" #slide>
+      <div class="content center">
+        <h1>Approve</h1>
+        <p>One tap to approve, tweak, or publish. Pollyn adapts to your creative flow.</p>
+      </div>
+    </div>
+
+    <!-- EVOLVE -->
+    <div class="slide slide-evolve" #slide>
+      <div class="content center">
+        <h1>Evolve</h1>
+        <p>Every post teaches Pollyn to know your voice better. Growth, effortless.</p>
+        <button class="end-btn" (click)="skipIntro()">Get Started</button>
+      </div>
+    </div>
+
+  </div>
+</section>

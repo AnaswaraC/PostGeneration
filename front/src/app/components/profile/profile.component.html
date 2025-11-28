@@ -1,0 +1,22 @@
+<div class="profile-card">
+  <div class="avatar-wrapper">
+    <img [src]="user.avatar" alt="Profile Picture" class="avatar" />
+    <div class="glow-ring"></div>
+  </div>
+
+  <h2 class="name">{{ user.name }}</h2>
+  <p class="role">{{ user.role }}</p>
+  <p class="bio">{{ user.bio }}</p>
+
+  <div class="stats">
+    <div class="stat" *ngFor="let s of user.stats">
+      <span class="value">{{ s.value }}</span>
+      <span class="label">{{ s.label }}</span>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn follow" (click)="onLogout()">Sign Out</button>
+    <button class="btn message" (click)="onClose()">Edit Profile</button>
+  </div>
+</div>

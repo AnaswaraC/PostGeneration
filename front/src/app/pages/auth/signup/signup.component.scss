@@ -1,0 +1,125 @@
+.signup-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(10, 15, 30, 0.6);
+  backdrop-filter: blur(14px);
+  z-index: 9999;
+  animation: fadeIn 0.3s ease forwards;
+}
+
+.signup-card {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 360px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(31, 107, 255, 0.2);
+  animation: scaleIn 0.3s ease forwards;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.signup-header img {
+  width: 50px;
+  margin-bottom: 1rem;
+}
+
+.signup-header h2 {
+  font-size: 1.5rem;
+  margin-bottom: 0.25rem;
+  color: #fff;
+}
+
+.signup-header p {
+  color: #ccc;
+  font-size: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 0.6rem 0.8rem;
+}
+
+.form-group i {
+  margin-right: 0.6rem;
+  color: #aab4ff;
+}
+
+input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #fff;
+  outline: none;
+  font-size: 0.95rem;
+}
+
+.signup-btn {
+  width: 100%;
+  background: linear-gradient(90deg, #708bff, #9ea8ff);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 0.8rem;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.signup-btn:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 10px rgba(160, 200, 255, 0.4);
+}
+
+.extras {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+.login-link {
+  color: #aab4ff;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
